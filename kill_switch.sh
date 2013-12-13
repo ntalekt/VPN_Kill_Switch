@@ -19,9 +19,10 @@ while true; do
 	EXTERNALIP=`host $HOSTNAME |grep -m 1 address|cut -d \  -f 4`
 	#Find the current external IP (could be assigned by ISP or assigned by VPN)
 	VPNIP=`curl -s checkip.dyndns.org|sed -e 's/.*Current IP Address: //' -e 's/<.*$//'`
+	echo $EXTERNALIP $VPNIP
 	#Compare External IP to VPN IP
 	if [ $VPNIP == $EXTERNALIP ]; then
-          # IP address is not hidden, but application is running!  Sending terminate signal to rtorrent.  Sleeping 5 seconds.
+          # IP address is not hidden, but application is running!  Sending terminate signal to application.  Sleeping 5 seconds.
           killall $APP
           sleep 5
           # sending kill signal to application (in case it is still running).
@@ -31,24 +32,10 @@ while true; do
 	  echo "rTorrent = $PROCSTATUS" | mail -s "VPN" $EMAIL
 	else
         # Application is running, but IP address is hidden.  Sleeping for $CHECK_INTERVAL seconds.
-	#let COUNT=COUNT+1
-	#echo $COUNT
-	TIME=$(date '+%H%M')
-	if [ $TIME -eq 1200 ]; then
-	  echo "VPN is good" | mail -s "VPN" $EMAIL
-	  sleep $CHECK_INTERVAL
-	else
 	  sleep $CHECK_INTERVAL
 	fi
-      fi
    else
       # Application is not running, so it doesn't matter if the IP is hidden or not.  Sleeping for $CHECK_INTERVAL seconds.
-	TIME=$(date '+%H%M')
-        if [ $TIME -eq 1200 ]; then
-          echo "rTorrent not running" | mail -s "VPN" $EMAIL
           sleep $CHECK_INTERVAL
-        else
-          sleep $CHECK_INTERVAL
-        fi
    fi
 done
